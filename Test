@@ -1,0 +1,64 @@
+<?php
+// Метод, который принимает на вход строку и меняет порядок букв в каждом слове на обратный с сохранением регистра и пунктуации
+function revertCharacters($str) {
+  // Разбиваем строку на массив слов, используя пробелы и пунктуацию как разделители
+  $words = preg_split('/(\s+|\p{P})/u', $str, -1, PREG_SPLIT_DELIM_CAPTURE);
+  // Создаем пустую строку для результата
+  $result = "";
+  // Перебираем массив слов
+  foreach ($words as $word) {
+    // Если слово не пустое
+    if ($word != "") {
+      // Создаем пустую строку для перевернутого слова
+      $reversed = "";
+      // Перебираем слово посимвольно с конца к началу
+      for ($i = mb_strlen($word) - 1; $i >= 0; $i--) {
+        // Получаем текущий символ
+        $char = mb_substr($word, $i, 1);
+        // Если символ является буквой
+        if (preg_match('/\p{L}/u', $char)) {
+          // Определяем его регистр
+          $case = mb_strtolower($char) == $char ? 'lower' : 'upper';
+          // Получаем символ в противоположном регистре
+          $opposite = $case == 'lower' ? mb_strtoupper($char) : mb_strtolower($char);
+          // Если в перевернутом слове уже есть символ в противоположном регистре на той же позиции
+          if (isset($reversed[mb_strlen($word) - $i - 1]) && $reversed[mb_strlen($word) - $i - 1] == $opposite) {
+            // Добавляем символ в том же регистре
+            $reversed .= $char;
+          } else {
+            // Добавляем символ в противоположном регистре
+            $reversed .= $opposite;
+          }
+        } else {
+          // Добавляем символ без изменений
+          $reversed .= $char;
+        }
+      }
+      // Добавляем перевернутое слово к результату
+      $result .= $reversed;
+    }
+  }
+  // Возвращаем результат
+  return $result;
+}
+
+// Unit-тесты для метода revertCharacters
+// Используем библиотеку PHPUnit для тестирования
+use PHPUnit\Framework\TestCase;
+
+class RevertCharactersTest extends TestCase {
+
+  // Тестовый метод, который проверяет, что метод revertCharacters работает корректно на разных входных данных
+  public function testRevertCharacters() {
+    // Проверяем, что метод revertCharacters возвращает ожидаемый результат на примере из задания
+    $this->assertEquals("Тевирп! Онвад ен ьсиледив.", revertCharacters("Привет! Давно не виделись."));
+    // Проверяем, что метод revertCharacters возвращает ожидаемый результат на других примерах
+    $this->assertEquals("Тевирп, ман Анна!", revertCharacters("Привет, я Анна!"));
+    $this->assertEquals("Онвад я уволен. Что делать?", revertCharacters("Давно я нелову. Точ дела?"));
+    $this->assertEquals("Я люблю PHP!", revertCharacters("Я йублу PHP!"));
+    $this->assertEquals("Это тестовая строка.", revertCharacters("Это яавотсет акортс."));
+    // Проверяем, что метод revertCharacters возвращает пустую строку, если на вход подается пустая строка
+    $this->assertEquals("", revertCharacters(""));
+  }
+}
+?>
